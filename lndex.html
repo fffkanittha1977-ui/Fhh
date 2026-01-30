@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Anomaly Watch: White Menu</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Sarabun:wght@400;700&display=swap');
+
+        body {
+            margin: 0; padding: 0; background-color: #000;
+            overflow: hidden; color: #ccc;
+            font-family: 'VT323', monospace;
+            user-select: none; -webkit-user-select: none;
+        }
+
+        #game-container {
+            width: 100vw; height: 100vh; position: relative;
+            display: flex; flex-direction: column;
+        }
+
+        /* SCREEN EFFECT */
+        .scanlines {
+            position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 10;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%; opacity: 0.6;
+        }
+        .vignette {
+            position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 11;
+            background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.9) 100%);
+        }
+
+        /* MONITOR */
+        #monitor {
+            flex: 1; position: relative; background: #050505;
+            display: flex; justify-content: center; align-items: center;
+            border-bottom: 2px solid #333; overflow: hidden;
+        }
+        canvas {
+            width: 100%; height: 100%; object-fit: contain;
+            filter: contrast(1.2) brightness(1.1) sepia(0.4) hue-rotate(50deg) grayscale(0.2); 
+        }
+        #cam-info {
+            position: absolute; top: 20px; left: 20px; font-size: 30px; color: #fff; text-shadow: 0 0 5px #0f0;
+            display: flex; gap: 20px; z-index: 5; background: rgba(0,0,0,0.5); padding: 5px 10px; border: 1px solid #0f0;
+        }
+        .rec-dot { color: red; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* CONTROLS */
+        #controls {
+            height: 280px; background: #111; border-top: 5px solid #222;
+            display: grid; grid-template-columns: 220px 1fr 200px; gap: 10px; padding: 10px;
+        }
+        
+        @media (max-width: 800px) {
+            #controls { display: flex; flex-direction: column; height: auto; max-height: 40vh; overflow-y: auto; }
+            .cam-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; height: auto; }
+        }
+
+        .cam-list { display: flex; flex-direction: column; gap: 5px; }
+        .cam-btn {
+            background: #222; border: 1px solid #444; color: #888;
+            padding: 8px; font-family: 'VT323'; font-size: 22px; cursor: pointer; text-align: left;
+        }
+        .cam-btn:hover { background: #333; }
+        .cam-btn.active { background: #003300; color: #0f0; border-color: #0f0; box-shadow: 0 0 10px #0f0; }
+
+        .report-panel {
+            border: 1px solid #444; padding: 10px; background: #080808;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .report-title { font-size: 24px; color: #f00; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .anomaly-types { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; overflow-y: auto; max-height: 150px; }
+        .type-btn {
+            background: #222; border: 1px solid #555; color: #aaa; padding: 10px; cursor: pointer; font-family: 'Sarabun'; font-size: 14px;
+        }
+        .type-btn:hover { background: #400; color: #fff; border-color: #f00; }
+        
+        .status-panel { display: flex; flex-direction: column; justify-content: space-between; text-align: right; }
+        .stat-row { font-size: 24px; }
+        #anomaly-count { color: #0f0; }
+        #anomaly-count.warning { color: #ff0; }
+        #anomaly-count.danger { color: #f00; animation: blink 0.5s infinite; }
+
+        /* SCREENS (Common) */
+        .screen-overlay {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            z-index: 50; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+        }
+
+        /* --- STYLED MENU SCREEN --- */
+        #menu-screen {
+            background-color: #050505;
+            background-image: 
+                radial-gradient(circle, rgba(20,20,20,1) 0%, rgba(0,0,0,1) 100%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, #000 4px);
+            background-size: cover;
+            color: #fff;
+        }
+        
+        /* Glitch Title */
+        #menu-screen h1 {
+            font-size: 100px; margin: 0; color: #fff; letter-spacing: 15px;
+            text-shadow: 2px 2px 0 #333, -2px -2px 0 #777;
+            animation: glitch-anim 3s infinite alternate-reverse;
+            font-weight: normal;
+        }
+
+        #menu-screen p {
+            font-size: 24px; letter-spacing: 5px; color: #aaa; margin-bottom: 40px;
+            border-top: 1px solid #555; border-bottom: 1px solid #555; padding: 10px 0;
+            width: 300px;
+        }
+
+        #menu-screen .ai-box {
+            font-family: 'Sarabun'; font-size: 16px; color: #888; 
+            font-style: italic; margin: 20px; max-width: 600px;
+            border-left: 2px solid #fff; padding-left: 15px;
+        }
+
+        #menu-screen .btn-start {
+            margin-top: 20px; padding: 15px 60px; 
+            border: 2px solid #fff; background: transparent;
+            color: #fff; font-family: 'VT323'; font-size: 32px; 
+            cursor: pointer; transition: all 0.2s;
+            text-shadow: 0 0 10px #fff; box-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+        #menu-screen .btn-start:hover {
+            background: #fff; color: #000;
+            box-shadow: 0 0 30px #fff;
+        }
+
+        @keyframes glitch-anim {
+            0% { text-shadow: 2px 2px 0 #333, -2px -2px 0 #777; transform: skew(0deg); }
+            20% { text-shadow: 2px 2px 0 #333, -2px -2px 0 #777; transform: skew(0deg); }
+            21% { text-shadow: -2px 2px 0 #f00, 2px -2px 0 #00f; transform: skew(10deg); }
+            22% { text-shadow: 2px 2px 0 #333, -2px -2px 0 #777; transform: skew(0deg); }
+            60% { opacity: 1; }
+            61% { opacity: 0.8; }
+            62% { opacity: 1; }
+            100% { text-shadow: 2px 2px 0 #333, -2px -2px 0 #777; transform: skew(0deg); }
+        }
+
+        /* Dark Screens for End Game */
+        .screen-dark { background: #000; }
+        .screen-dark h1 { font-size: 80px; margin: 0; text-shadow: 0 0 10px #fff; letter-spacing: 5px; color: #fff; }
+        .screen-dark .btn-start {
+            margin-top: 30px; padding: 15px 50px; border: 2px solid #fff; background: #111;
+            color: #fff; font-family: 'VT323'; font-size: 30px; cursor: pointer; transition: 0.2s;
+        }
+        .screen-dark .btn-start:hover { background: #fff; color: #000; }
+
+        #msg-flash {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 40px; color: #fff; text-shadow: 0 0 10px #fff; 
+            pointer-events: none; opacity: 0; z-index: 20; transition: opacity 0.5s;
+            background: rgba(0,0,0,0.8); padding: 20px; border: 2px solid #fff;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <div id="game-container">
+        <!-- MONITOR -->
+        <div id="monitor">
+            <div id="cam-info">
+                <span class="rec-dot">●</span>
+                <span id="curr-cam-name">LIVING ROOM</span>
+                <span id="time-display" style="margin-left: 30px;">00:00 AM</span>
+            </div>
+            <div id="msg-flash">REPORT SENT</div>
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <!-- CONTROLS -->
+        <div id="controls">
+            <!-- Camera List -->
+            <div class="cam-list">
+                <button class="cam-btn active" onclick="Game.switchCam(0)">CAM 01: LIVING</button>
+                <button class="cam-btn" onclick="Game.switchCam(1)">CAM 02: KITCHEN</button>
+                <button class="cam-btn" onclick="Game.switchCam(2)">CAM 03: BEDROOM</button>
+                <button class="cam-btn" onclick="Game.switchCam(3)">CAM 04: BATHROOM</button>
+            </div>
+
+            <!-- Report Menu -->
+            <div class="report-panel">
+                <div class="report-title">REPORT ANOMALY</div>
+                <div class="anomaly-types">
+                    <button class="type-btn" onclick="Game.report('Intruder')">Intruder (ผี/เงา)</button>
+                    <button class="type-btn" onclick="Game.report('Displacement')">Moved (ของขยับ)</button>
+                    <button class="type-btn" onclick="Game.report('Extra')">Extra (ของเกิน)</button>
+                    <button class="type-btn" onclick="Game.report('Missing')">Missing (ของหาย)</button>
+                    <button class="type-btn" onclick="Game.report('Door')">Door (ประตู/ตู้)</button>
+                    <button class="type-btn" onclick="Game.report('Camera')">Camera (กล้องเสีย)</button>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="status-panel">
+                <div class="stat-row">STATUS: <span style="color:#0f0">ONLINE</span></div>
+                <div class="stat-row">ANOMALIES: <span id="anomaly-count">0</span> / 4</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MENUS (WHITE THEME) -->
+    <div id="menu-screen" class="screen-overlay">
+        <h1>ANOMALY<br>WATCH</h1>
+        <p>SYSTEM BOOT...</p>
+        <div id="ai-intro" class="ai-box">"กำลังโหลดข้อมูลกะดึก... กรุณาเตรียมพร้อม"</div>
+        <button class="btn-start" onclick="Game.start()">INITIALIZE</button>
+    </div>
+
+    <!-- GAME OVER (DARK THEME) -->
+    <div id="game-over-screen" class="screen-overlay screen-dark" style="display:none;">
+        <h1 style="color:red">KILLED</h1>
+        <p style="font-size:24px; color:#aaa;">Too many anomalies active.</p>
+        <button class="btn-start" onclick="location.reload()">TRY AGAIN</button>
+    </div>
+
+    <!-- WIN (DARK THEME) -->
+    <div id="win-screen" class="screen-overlay screen-dark" style="display:none;">
+        <h1 style="color:#0f0">SURVIVED</h1>
+        <p style="font-size:24px; color:#aaa;">Shift Completed (6:00 AM)</p>
+        <button class="btn-start" onclick="location.reload()">MAIN MENU</button>
+    </div>
+
+    <script>
+        // --- SOUND ENGINE ---
+        const AudioSys = {
+            ctx: null,
+            ambienceNode: null,
+            init: function() {
+                if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if(this.ctx.state === 'suspended') this.ctx.resume();
+            },
+            play: function(type) {
+                if(!this.ctx) return;
+                const t = this.ctx.currentTime;
+                const o = this.ctx.createOscillator();
+                const g = this.ctx.createGain();
+                o.connect(g); g.connect(this.ctx.destination);
+
+                if (type === 'static') { 
+                    const bSize = this.ctx.sampleRate * 0.2;
+                    const b = this.ctx.createBuffer(1, bSize, this.ctx.sampleRate);
+                    const d = b.getChannelData(0);
+                    for(let i=0;i<bSize;i++) d[i] = Math.random()*2-1;
+                    const n = this.ctx.createBufferSource(); n.buffer=b;
+                    const ng = this.ctx.createGain();
+                    ng.gain.setValueAtTime(0.1, t); ng.gain.exponentialRampToValueAtTime(0.01, t+0.2);
+                    n.connect(ng); ng.connect(this.ctx.destination); n.start();
+                }
+                else if (type === 'click') {
+                    o.type='square'; o.frequency.setValueAtTime(800, t);
+                    g.gain.setValueAtTime(0.05, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.1);
+                    o.start(); o.stop(t+0.1);
+                }
+                else if (type === 'success') {
+                    o.type='sine'; o.frequency.setValueAtTime(600, t); o.frequency.linearRampToValueAtTime(1200, t+0.2);
+                    g.gain.setValueAtTime(0.1, t); g.gain.linearRampToValueAtTime(0, t+0.5);
+                    o.start(); o.stop(t+0.5);
+                }
+                else if (type === 'error') {
+                    o.type='sawtooth'; o.frequency.setValueAtTime(150, t);
+                    g.gain.setValueAtTime(0.1, t); g.gain.linearRampToValueAtTime(0, t+0.3);
+                    o.start(); o.stop(t+0.3);
+                }
+                else if (type === 'spawn') {
+                    o.type='triangle'; o.frequency.setValueAtTime(100, t); o.frequency.exponentialRampToValueAtTime(30, t+0.5);
+                    g.gain.setValueAtTime(0.2, t); g.gain.linearRampToValueAtTime(0, t+1.0);
+                    o.start(); o.stop(t+1.0);
+                }
+                else if (type === 'scream') {
+                    o.type='sawtooth'; o.frequency.setValueAtTime(200, t); o.frequency.linearRampToValueAtTime(1000, t+0.5);
+                    g.gain.setValueAtTime(0.4, t); g.gain.linearRampToValueAtTime(0, t+1.5);
+                    o.start(); o.stop(t+1.5);
+                }
+                else if (type === 'win') {
+                    o.type='sine'; o.frequency.setValueAtTime(440, t);
+                    g.gain.setValueAtTime(0.2, t); g.gain.linearRampToValueAtTime(0, t+2.0);
+                    o.start(); o.stop(t+2.0);
+                }
+            },
+            startAmbience: function() {
+                if(this.ambienceNode) return;
+                const o = this.ctx.createOscillator();
+                const g = this.ctx.createGain();
+                o.type='sine'; o.frequency.value=50; // Low hum
+                g.gain.value=0.02;
+                o.connect(g); g.connect(this.ctx.destination);
+                o.start();
+                this.ambienceNode = o;
+            }
+        };
+
+        // --- GAME DATA ---
+        const ROOMS = [
+            { id: 0, name: 'LIVING ROOM', objects: [] },
+            { id: 1, name: 'KITCHEN', objects: [] },
+            { id: 2, name: 'BEDROOM', objects: [] },
+            { id: 3, name: 'BATHROOM', objects: [] }
+        ];
+
+        // Detailed Objects (Base State)
+        const BASE_OBJECTS = {
+            0: [ // Living Room
+                { id: 'wall', type: 'room_bg', color: '#1a1a1a' },
+                { id: 'window', type: 'window', x: 250, y: 50, w: 140, h: 100 },
+                { id: 'sofa', type: 'sofa', x: 180, y: 280, w: 280, h: 100, color: '#3f2a2a' },
+                { id: 'tv_stand', type: 'tv_stand', x: 50, y: 220, w: 120, h: 150 },
+                { id: 'painting', type: 'painting', x: 500, y: 80, w: 80, h: 100 },
+                { id: 'lamp', type: 'lamp', x: 500, y: 250, w: 40, h: 120 },
+                { id: 'rug', type: 'rug', x: 200, y: 380, w: 240, h: 60 }
+            ],
+            1: [ // Kitchen
+                { id: 'wall', type: 'room_bg', color: '#222' },
+                { id: 'cabinet_top', type: 'cabinet', x: 100, y: 50, w: 300, h: 80 },
+                { id: 'fridge', type: 'fridge', x: 450, y: 120, w: 120, h: 250 },
+                { id: 'counter', type: 'counter', x: 100, y: 280, w: 300, h: 120 },
+                { id: 'table', type: 'table', x: 200, y: 350, w: 180, h: 80 },
+                { id: 'chair', type: 'chair', x: 170, y: 360, w: 40, h: 70 }
+            ],
+            2: [ // Bedroom
+                { id: 'wall', type: 'room_bg', color: '#151520' },
+                { id: 'window_tall', type: 'window_tall', x: 280, y: 50, w: 80, h: 150 },
+                { id: 'bed', type: 'bed', x: 150, y: 280, w: 250, h: 120 },
+                { id: 'wardrobe', type: 'wardrobe', x: 480, y: 150, w: 120, h: 250 },
+                { id: 'bedside', type: 'bedside', x: 100, y: 320, w: 40, h: 50 }
+            ],
+            3: [ // Bathroom (Detailed!)
+                { id: 'wall', type: 'room_bg', color: '#203030' },
+                { id: 'mirror', type: 'mirror', x: 220, y: 60, w: 100, h: 120 },
+                { id: 'sink', type: 'sink', x: 200, y: 200, w: 140, h: 150 },
+                { id: 'bathtub', type: 'bathtub', x: 50, y: 280, w: 200, h: 100 },
+                { id: 'toilet', type: 'toilet', x: 450, y: 250, w: 80, h: 130 },
+                { id: 'towel_rack', type: 'towel', x: 550, y: 150, w: 10, h: 60 },
+                { id: 'mat', type: 'rug', x: 250, y: 380, w: 100, h: 40, color: '#446' }
+            ]
+        };
+
+        // --- GAME ENGINE ---
+        const Game = {
+            canvas: document.getElementById('gameCanvas'),
+            ctx: document.getElementById('gameCanvas').getContext('2d'),
+            width: 640, height: 480,
+            
+            state: 'MENU',
+            currentCam: 0,
+            time: 0, 
+            activeAnomalies: [], 
+            activeCount: 0,
+            
+            init: function() {
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+                this.resetRooms();
+                
+                setInterval(() => this.tick(), 1000); 
+                requestAnimationFrame(() => this.drawLoop());
+            },
+
+            resetRooms: function() {
+                ROOMS.forEach(r => {
+                    r.objects = JSON.parse(JSON.stringify(BASE_OBJECTS[r.id]));
+                });
+            },
+
+            start: function() {
+                this.state = 'PLAY';
+                this.time = 0;
+                this.activeAnomalies = [];
+                this.activeCount = 0;
+                this.resetRooms();
+                
+                AudioSys.init();
+                AudioSys.startAmbience();
+                AudioSys.play('click');
+                
+                document.getElementById('menu-screen').style.display = 'none';
+                document.getElementById('game-over-screen').style.display = 'none';
+                document.getElementById('win-screen').style.display = 'none';
+            },
+
+            switchCam: function(id) {
+                if(this.state !== 'PLAY') return;
+                this.currentCam = id;
+                document.getElementById('curr-cam-name').innerText = ROOMS[id].name;
+                document.querySelectorAll('.cam-btn').forEach((b,i) => {
+                    b.classList.toggle('active', i===id);
+                });
+                
+                AudioSys.play('static');
+                
+                // Flash static
+                this.ctx.fillStyle = '#fff';
+                this.ctx.fillRect(0,0,this.width,this.height);
+            },
+
+            tick: function() {
+                if (this.state !== 'PLAY') return;
+
+                this.time++;
+                const hour = Math.floor(this.time / 60); 
+                document.getElementById('time-display').innerText = `0${hour}:00 AM`;
+                
+                if (hour >= 6) {
+                    this.state = 'WIN';
+                    document.getElementById('win-screen').style.display = 'flex';
+                    AudioSys.play('win');
+                    return;
+                }
+
+                // Spawn Anomaly (Increase chance over time)
+                const chance = 0.15 + (hour * 0.03); 
+                if (Math.random() < chance && this.activeCount < 5) {
+                    this.spawnAnomaly();
+                }
+
+                const countEl = document.getElementById('anomaly-count');
+                countEl.innerText = this.activeCount;
+                countEl.className = this.activeCount >= 4 ? 'danger' : (this.activeCount >= 2 ? 'warning' : '');
+
+                if (this.activeCount >= 5) {
+                    this.state = 'OVER';
+                    document.getElementById('game-over-scre
