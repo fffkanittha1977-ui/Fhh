@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Anomaly Watch: White Menu</title>
+    <title>Anomaly Watch: AI Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&family=Sarabun:wght@400;700&display=swap');
 
@@ -27,7 +27,7 @@
         }
         .vignette {
             position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 11;
-            background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.9) 100%);
+            background: radial-gradient(circle, transparent 60%, rgba(0,10,0,0.9) 100%);
         }
 
         /* MONITOR */
@@ -90,67 +90,75 @@
             align-items: center; justify-content: center; text-align: center;
         }
 
-        /* --- STYLED MENU SCREEN --- */
+        /* Dark Screens (Game Over / Win) */
+        .screen-dark { background: #000; color: #fff; }
+        .screen-dark h1 { font-size: 80px; margin: 0; text-shadow: 0 0 10px #fff; letter-spacing: 5px; }
+        .screen-dark .btn-start {
+            margin-top: 30px; padding: 15px 60px; border: 2px solid #fff; background: #002200;
+            color: #0f0; font-family: 'VT323'; font-size: 30px; cursor: pointer; transition: 0.2s;
+        }
+        .screen-dark .btn-start:hover { background: #0f0; color: #000; }
+        .screen-dark .ai-box { font-family: 'Sarabun'; font-size: 18px; color: #aaa; font-style: italic; margin: 20px; max-width: 600px; padding: 10px; border: 1px dashed #555; }
+
+        /* WHITE MENU SCREEN */
         #menu-screen {
-            background-color: #050505;
-            background-image: 
-                radial-gradient(circle, rgba(20,20,20,1) 0%, rgba(0,0,0,1) 100%),
-                repeating-linear-gradient(0deg, transparent, transparent 2px, #000 4px);
-            background-size: cover;
-            color: #fff;
+            background-color: #ffffff;
+            color: #000000;
+        }
+        #menu-screen h1 {
+            font-size: 80px; margin: 0; color: #000; letter-spacing: 10px;
+            text-transform: uppercase; font-weight: bold;
+            border-bottom: 5px solid #000; padding-bottom: 10px; margin-bottom: 10px;
+        }
+        #menu-screen p {
+            color: #000; font-size: 20px; font-weight: bold; letter-spacing: 5px; margin-bottom: 20px;
         }
         
-        /* Glitch Title */
-        #menu-screen h1 {
-            font-size: 100px; margin: 0; color: #fff; letter-spacing: 15px;
-            text-shadow: 2px 2px 0 #333, -2px -2px 0 #777;
-            animation: glitch-anim 3s infinite alternate-reverse;
-            font-weight: normal;
+        /* How to Play Box */
+        #how-to-play {
+            border: 2px solid #000;
+            padding: 20px;
+            margin: 10px;
+            text-align: left;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+            background: #f4f4f4;
+            width: 90%;
+            max-width: 550px;
+            box-shadow: 8px 8px 0px #888;
         }
-
-        #menu-screen p {
-            font-size: 24px; letter-spacing: 5px; color: #aaa; margin-bottom: 40px;
-            border-top: 1px solid #555; border-bottom: 1px solid #555; padding: 10px 0;
-            width: 300px;
+        #how-to-play h2 {
+            font-family: 'Sarabun'; font-weight: bold; font-size: 20px; margin-top: 0; 
+            border-bottom: 1px solid #000; margin-bottom: 10px; display: inline-block;
         }
-
-        #menu-screen .ai-box {
-            font-family: 'Sarabun'; font-size: 16px; color: #888; 
-            font-style: italic; margin: 20px; max-width: 600px;
-            border-left: 2px solid #fff; padding-left: 15px;
-        }
+        #how-to-play ul { padding-left: 20px; margin: 0; }
+        #how-to-play li { margin-bottom: 4px; }
 
         #menu-screen .btn-start {
-            margin-top: 20px; padding: 15px 60px; 
-            border: 2px solid #fff; background: transparent;
-            color: #fff; font-family: 'VT323'; font-size: 32px; 
+            margin-top: 25px; padding: 12px 60px; 
+            border: 2px solid #000; background: #fff;
+            color: #000; font-family: 'Sarabun'; font-size: 24px; font-weight: bold;
             cursor: pointer; transition: all 0.2s;
-            text-shadow: 0 0 10px #fff; box-shadow: 0 0 10px rgba(255,255,255,0.2);
         }
         #menu-screen .btn-start:hover {
-            background: #fff; color: #000;
-            box-shadow: 0 0 30px #fff;
+            background: #000; color: #fff;
         }
+        
+        /* AI Log Button */
+        #btn-log {
+            margin-top: 10px; padding: 10px 30px; 
+            border: 1px dashed #000; background: transparent;
+            color: #555; font-family: 'Sarabun'; font-size: 18px; 
+            cursor: pointer; transition: all 0.2s;
+        }
+        #btn-log:hover { background: #eee; color: #000; }
 
-        @keyframes glitch-anim {
-            0% { text-shadow: 2px 2px 0 #333, -2px -2px 0 #777; transform: skew(0deg); }
-            20% { text-shadow: 2px 2px 0 #333, -2px -2px 0 #777; transform: skew(0deg); }
-            21% { text-shadow: -2px 2px 0 #f00, 2px -2px 0 #00f; transform: skew(10deg); }
-            22% { text-shadow: 2px 2px 0 #333, -2px -2px 0 #777; transform: skew(0deg); }
-            60% { opacity: 1; }
-            61% { opacity: 0.8; }
-            62% { opacity: 1; }
-            100% { text-shadow: 2px 2px 0 #333, -2px -2px 0 #777; transform: skew(0deg); }
+        #menu-screen .ai-box {
+            font-family: 'Sarabun'; font-size: 16px; color: #555; 
+            font-style: italic; margin-top: 15px; border-left: 3px solid #ccc; padding-left: 10px;
+            min-height: 40px; display: flex; align-items: center; justify-content: center;
         }
-
-        /* Dark Screens for End Game */
-        .screen-dark { background: #000; }
-        .screen-dark h1 { font-size: 80px; margin: 0; text-shadow: 0 0 10px #fff; letter-spacing: 5px; color: #fff; }
-        .screen-dark .btn-start {
-            margin-top: 30px; padding: 15px 50px; border: 2px solid #fff; background: #111;
-            color: #fff; font-family: 'VT323'; font-size: 30px; cursor: pointer; transition: 0.2s;
-        }
-        .screen-dark .btn-start:hover { background: #fff; color: #000; }
 
         #msg-flash {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -182,10 +190,10 @@
         <div id="controls">
             <!-- Camera List -->
             <div class="cam-list">
-                <button class="cam-btn active" onclick="Game.switchCam(0)">CAM 01: LIVING</button>
-                <button class="cam-btn" onclick="Game.switchCam(1)">CAM 02: KITCHEN</button>
-                <button class="cam-btn" onclick="Game.switchCam(2)">CAM 03: BEDROOM</button>
-                <button class="cam-btn" onclick="Game.switchCam(3)">CAM 04: BATHROOM</button>
+                <button class="cam-btn active" onclick="Game.switchCam(0)">[1] LIVING ROOM</button>
+                <button class="cam-btn" onclick="Game.switchCam(1)">[2] KITCHEN</button>
+                <button class="cam-btn" onclick="Game.switchCam(2)">[3] BEDROOM</button>
+                <button class="cam-btn" onclick="Game.switchCam(3)">[4] BATHROOM</button>
             </div>
 
             <!-- Report Menu -->
@@ -211,27 +219,81 @@
 
     <!-- MENUS (WHITE THEME) -->
     <div id="menu-screen" class="screen-overlay">
-        <h1>ANOMALY<br>WATCH</h1>
-        <p>SYSTEM BOOT...</p>
-        <div id="ai-intro" class="ai-box">"กำลังโหลดข้อมูลกะดึก... กรุณาเตรียมพร้อม"</div>
-        <button class="btn-start" onclick="Game.start()">INITIALIZE</button>
+        <h1>ANOMALY WATCH</h1>
+        <p>AI POWERED EDITION</p>
+        
+        <div id="how-to-play">
+            <h2>คำสั่งปฏิบัติการ (INSTRUCTIONS)</h2>
+            <ul>
+                <li><b>ภารกิจ:</b> ตรวจสอบกล้องวงจรปิดทั้ง 4 จุด ตั้งแต่ 00:00 - 06:00 น.</li>
+                <li><b>การตรวจสอบ:</b> สังเกตความผิดปกติที่เกิดขึ้นในห้อง (ของหาย, ของเกิน, เงาคน)</li>
+                <li><b>การรายงาน:</b> กดปุ่ม <b>REPORT</b> ให้ตรงกับประเภทความผิดปกติเพื่อแก้ไข</li>
+                <li><b>คำเตือน:</b> หากความผิดปกติสะสมครบ 4 อย่าง ระบบจะล่ม</li>
+            </ul>
+        </div>
+        
+        <div id="ai-intro" class="ai-box">"กดปุ่มอ่านบันทึก เพื่อดูข้อมูลกะดึก..."</div>
+        <button id="btn-log" onclick="generateShiftLog()">✨ อ่านบันทึกกะดึก (SHIFT LOG)</button>
+        <button class="btn-start" onclick="Game.start()">เริ่มเข้าเวร (CLOCK IN)</button>
     </div>
 
     <!-- GAME OVER (DARK THEME) -->
     <div id="game-over-screen" class="screen-overlay screen-dark" style="display:none;">
-        <h1 style="color:red">KILLED</h1>
-        <p style="font-size:24px; color:#aaa;">Too many anomalies active.</p>
-        <button class="btn-start" onclick="location.reload()">TRY AGAIN</button>
+        <h1 style="color:red">SIGNAL LOST</h1>
+        <p style="font-size:24px; color:#aaa;">ความผิดปกติเกินขีดจำกัด</p>
+        <div id="death-report" class="ai-box"></div>
+        <button class="btn-start" onclick="location.reload()">REBOOT SYSTEM</button>
     </div>
 
     <!-- WIN (DARK THEME) -->
     <div id="win-screen" class="screen-overlay screen-dark" style="display:none;">
-        <h1 style="color:#0f0">SURVIVED</h1>
-        <p style="font-size:24px; color:#aaa;">Shift Completed (6:00 AM)</p>
-        <button class="btn-start" onclick="location.reload()">MAIN MENU</button>
+        <h1 style="color:#0f0">SHIFT COMPLETE</h1>
+        <p style="font-size:24px; color:#aaa;">จบภารกิจ (6:00 AM)</p>
+        <div id="win-report" class="ai-box"></div>
+        <button class="btn-start" onclick="location.reload()">LOGOUT</button>
     </div>
 
     <script>
+        // --- GEMINI AI INTEGRATION ---
+        const apiKey = ""; 
+
+        async function callGemini(prompt) {
+            if(!apiKey) return "API Key not found. (AI Disabled)";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "Signal Lost...";
+            } catch(e) { return "Connection Error..."; }
+        }
+
+        async function generateShiftLog() {
+            const el = document.getElementById('ai-intro');
+            el.innerText = "กำลังดาวน์โหลดบันทึก...";
+            const prompt = "แต่งบันทึกยามกะดึกสั้นๆ 2 ประโยค เกี่ยวกับสิ่งที่เคยเจอในบ้านผีสิงแห่งนี้ (เช่น เห็นเงาคน, ได้ยินเสียง) ภาษาไทย ให้ดูน่ากลัวและสมจริง";
+            const text = await callGemini(prompt);
+            el.innerText = `"${text}"`;
+        }
+
+        async function generateDeathReport() {
+            const el = document.getElementById('death-report');
+            el.innerText = "กำลังวิเคราะห์สาเหตุการเสียชีวิต...";
+            const prompt = "เขียนรายงานชันสูตรศพสั้นๆ 1 ประโยค ของยามที่เสียชีวิตปริศนาในหน้าที่ ภาษาไทย (แนวสยองขวัญ SCP)";
+            const text = await callGemini(prompt);
+            el.innerText = `REPORT: ${text}`;
+        }
+
+        async function generateWinReport() {
+            const el = document.getElementById('win-report');
+            el.innerText = "กำลังบันทึกข้อมูล...";
+            const prompt = "เขียนคำชมเชยสั้นๆ 1 ประโยค สำหรับเจ้าหน้าที่ความปลอดภัยที่เอาตัวรอดจากสิ่งเหนือธรรมชาติได้ ภาษาไทย";
+            const text = await callGemini(prompt);
+            el.innerText = `LOG: ${text}`;
+        }
+
         // --- SOUND ENGINE ---
         const AudioSys = {
             ctx: null,
@@ -350,83 +412,4 @@
             canvas: document.getElementById('gameCanvas'),
             ctx: document.getElementById('gameCanvas').getContext('2d'),
             width: 640, height: 480,
-            
-            state: 'MENU',
-            currentCam: 0,
-            time: 0, 
-            activeAnomalies: [], 
-            activeCount: 0,
-            
-            init: function() {
-                this.canvas.width = this.width;
-                this.canvas.height = this.height;
-                this.resetRooms();
-                
-                setInterval(() => this.tick(), 1000); 
-                requestAnimationFrame(() => this.drawLoop());
-            },
-
-            resetRooms: function() {
-                ROOMS.forEach(r => {
-                    r.objects = JSON.parse(JSON.stringify(BASE_OBJECTS[r.id]));
-                });
-            },
-
-            start: function() {
-                this.state = 'PLAY';
-                this.time = 0;
-                this.activeAnomalies = [];
-                this.activeCount = 0;
-                this.resetRooms();
-                
-                AudioSys.init();
-                AudioSys.startAmbience();
-                AudioSys.play('click');
-                
-                document.getElementById('menu-screen').style.display = 'none';
-                document.getElementById('game-over-screen').style.display = 'none';
-                document.getElementById('win-screen').style.display = 'none';
-            },
-
-            switchCam: function(id) {
-                if(this.state !== 'PLAY') return;
-                this.currentCam = id;
-                document.getElementById('curr-cam-name').innerText = ROOMS[id].name;
-                document.querySelectorAll('.cam-btn').forEach((b,i) => {
-                    b.classList.toggle('active', i===id);
-                });
-                
-                AudioSys.play('static');
-                
-                // Flash static
-                this.ctx.fillStyle = '#fff';
-                this.ctx.fillRect(0,0,this.width,this.height);
-            },
-
-            tick: function() {
-                if (this.state !== 'PLAY') return;
-
-                this.time++;
-                const hour = Math.floor(this.time / 60); 
-                document.getElementById('time-display').innerText = `0${hour}:00 AM`;
-                
-                if (hour >= 6) {
-                    this.state = 'WIN';
-                    document.getElementById('win-screen').style.display = 'flex';
-                    AudioSys.play('win');
-                    return;
-                }
-
-                // Spawn Anomaly (Increase chance over time)
-                const chance = 0.15 + (hour * 0.03); 
-                if (Math.random() < chance && this.activeCount < 5) {
-                    this.spawnAnomaly();
-                }
-
-                const countEl = document.getElementById('anomaly-count');
-                countEl.innerText = this.activeCount;
-                countEl.className = this.activeCount >= 4 ? 'danger' : (this.activeCount >= 2 ? 'warning' : '');
-
-                if (this.activeCount >= 5) {
-                    this.state = 'OVER';
-                    document.getElementById('game-over-scre
+          
